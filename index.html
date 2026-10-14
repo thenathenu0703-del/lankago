@@ -1,11 +1,11 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#075e54">
+  <meta name="description" content="LankaGo - Explore Sri Lanka and estimate your travel fares.">
   <title>LankaGo - Travel Sri Lanka</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -27,77 +27,134 @@
       <h2>📍 Book Your Ride</h2>
 
       <label for="pickup">Pickup Location</label>
-      <input id="pickup" type="text"
-        placeholder="Enter pickup location"
-        oninput="calculateFare()">
+      <input
+        id="pickup"
+        type="text"
+        placeholder="Enter pickup location in Sri Lanka"
+        autocomplete="street-address"
+      >
 
       <label for="destination">Destination</label>
-      <input id="destination" type="text"
-        placeholder="Enter destination"
-        oninput="calculateFare()">
+      <input
+        id="destination"
+        type="text"
+        placeholder="Enter destination in Sri Lanka"
+      >
+
+      <button
+        type="button"
+        id="distance-button"
+        onclick="calculateRouteDistance()"
+      >
+        📍 Calculate Distance
+      </button>
+
+      <p id="route-status" role="status" aria-live="polite"></p>
 
       <label for="distance">Travel Distance (km)</label>
-      <input id="distance" type="number" min="0.1"
-        step="0.1" placeholder="Enter distance in km"
-        oninput="calculateFare()">
+      <input
+        id="distance"
+        type="number"
+        min="0.1"
+        step="0.1"
+        placeholder="Calculate distance first"
+        readonly
+      >
 
       <h3>Choose Your Transport</h3>
 
       <div class="transport-options">
-        <button type="button" onclick="choose('Tuk Tuk')">🛺 Tuk Tuk</button>
-        <button type="button" onclick="choose('Car')">🚗 Car</button>
-        <button type="button" onclick="choose('Van')">🚐 Van</button>
+        <button type="button" onclick="choose('Tuk Tuk')">
+          🛺 Tuk Tuk
+        </button>
+
+        <button type="button" onclick="choose('Car')">
+          🚗 Car
+        </button>
+
+        <button type="button" onclick="choose('Van')">
+          🚐 Van
+        </button>
       </div>
 
       <p id="selected">Selected: None</p>
 
       <div class="fare-box">
         <h3>💰 Estimated Fare</h3>
-        <p id="fare">Enter locations and distance</p>
-        <small>Sample estimate only — not a confirmed fare.</small>
+        <p id="fare">Enter locations and calculate distance.</p>
+        <small>
+          Sample estimate only — not a confirmed fare.
+        </small>
       </div>
 
-      <button type="button" class="book-button"
-        onclick="bookRide()">Book Now</button>
+      <button
+        type="button"
+        class="book-button"
+        onclick="bookRide()"
+      >
+        Book Now
+      </button>
 
-      <p id="result" role="status"></p>
+      <p id="result" role="status" aria-live="polite"></p>
     </section>
 
     <section class="history-section">
       <h2>📋 My Booking History</h2>
-      <div id="history"><p>No bookings yet.</p></div>
-      <button type="button" class="clear-button"
-        onclick="clearHistory()">🗑️ Clear History</button>
+
+      <div id="history">
+        <p>No bookings yet.</p>
+      </div>
+
+      <button
+        type="button"
+        class="clear-button"
+        onclick="clearHistory()"
+      >
+        🗑️ Clear History
+      </button>
     </section>
 
     <section class="services">
       <h2>🌍 Explore Our Services</h2>
 
       <div class="service-grid">
+
         <div class="service-card">
-          <span>🚌</span><h3>Bus</h3>
+          <span>🚌</span>
+          <h3>Bus</h3>
           <p>Bus travel information</p>
         </div>
+
         <div class="service-card">
-          <span>🚆</span><h3>Train</h3>
+          <span>🚆</span>
+          <h3>Train</h3>
           <p>Train travel information</p>
         </div>
+
         <div class="service-card">
-          <span>✈️</span><h3>Flights</h3>
-          <p>Flight travel information</p>
+          <span>✈️</span>
+          <h3>Flights</h3>
+          <p>Flight information</p>
         </div>
+
         <div class="service-card">
-          <span>🏨</span><h3>Hotels</h3>
+          <span>🏨</span>
+          <h3>Hotels</h3>
           <p>Find places to stay</p>
         </div>
+
         <div class="service-card">
-          <span>🗺️</span><h3>Tours</h3>
+          <span>🗺️</span>
+          <h3>Tours</h3>
           <p>Explore Sri Lanka</p>
         </div>
+
         <div class="service-card">
-          <span>📦</span><h3>Goods Transport</h3>
+          <span>📦</span>
+          <h3>Goods Transport</h3>
           <p>Transport your goods</p>
         </div>
+
       </div>
     </section>
 
