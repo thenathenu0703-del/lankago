@@ -1,0 +1,7 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="110" fill="#087f5b"/>
+  <text x="256" y="300" font-size="180"
+        text-anchor="middle" fill="#ffffff"
+        font-family="Arial" font-weight="bold">LG</text>
+</svg>
