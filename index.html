@@ -1,1 +1,113 @@
 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#075e54">
+  <title>LankaGo - Travel Sri Lanka</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app">
+
+    <header class="header">
+      <h1>🚕 LankaGo</h1>
+      <p>Sri Lanka's All-in-One Travel App</p>
+    </header>
+
+    <section class="welcome">
+      <h2>Travel Smarter with LankaGo!</h2>
+      <p>Your journey starts here.</p>
+    </section>
+
+    <section class="booking">
+      <h2>📍 Book Your Ride</h2>
+
+      <label for="pickup">Pickup Location</label>
+      <input id="pickup" type="text"
+        placeholder="Enter pickup location"
+        oninput="calculateFare()">
+
+      <label for="destination">Destination</label>
+      <input id="destination" type="text"
+        placeholder="Enter destination"
+        oninput="calculateFare()">
+
+      <label for="distance">Travel Distance (km)</label>
+      <input id="distance" type="number" min="0.1"
+        step="0.1" placeholder="Enter distance in km"
+        oninput="calculateFare()">
+
+      <h3>Choose Your Transport</h3>
+
+      <div class="transport-options">
+        <button type="button" onclick="choose('Tuk Tuk')">🛺 Tuk Tuk</button>
+        <button type="button" onclick="choose('Car')">🚗 Car</button>
+        <button type="button" onclick="choose('Van')">🚐 Van</button>
+      </div>
+
+      <p id="selected">Selected: None</p>
+
+      <div class="fare-box">
+        <h3>💰 Estimated Fare</h3>
+        <p id="fare">Enter locations and distance</p>
+        <small>Sample estimate only — not a confirmed fare.</small>
+      </div>
+
+      <button type="button" class="book-button"
+        onclick="bookRide()">Book Now</button>
+
+      <p id="result" role="status"></p>
+    </section>
+
+    <section class="history-section">
+      <h2>📋 My Booking History</h2>
+      <div id="history"><p>No bookings yet.</p></div>
+      <button type="button" class="clear-button"
+        onclick="clearHistory()">🗑️ Clear History</button>
+    </section>
+
+    <section class="services">
+      <h2>🌍 Explore Our Services</h2>
+
+      <div class="service-grid">
+        <div class="service-card">
+          <span>🚌</span><h3>Bus</h3>
+          <p>Bus travel information</p>
+        </div>
+        <div class="service-card">
+          <span>🚆</span><h3>Train</h3>
+          <p>Train travel information</p>
+        </div>
+        <div class="service-card">
+          <span>✈️</span><h3>Flights</h3>
+          <p>Flight travel information</p>
+        </div>
+        <div class="service-card">
+          <span>🏨</span><h3>Hotels</h3>
+          <p>Find places to stay</p>
+        </div>
+        <div class="service-card">
+          <span>🗺️</span><h3>Tours</h3>
+          <p>Explore Sri Lanka</p>
+        </div>
+        <div class="service-card">
+          <span>📦</span><h3>Goods Transport</h3>
+          <p>Transport your goods</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>© 2026 LankaGo | Travel Across Sri Lanka 🇱🇰</p>
+      <p>Demo version — real bookings are not available yet.</p>
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
