@@ -1,14 +1,26 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <meta name="theme-color" content="#075e54">
   <meta name="description" content="LankaGo - Explore Sri Lanka and estimate your travel fares.">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="LankaGo">
+
   <title>LankaGo - Travel Sri Lanka</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <div class="app">
@@ -82,9 +94,7 @@
       <div class="fare-box">
         <h3>💰 Estimated Fare</h3>
         <p id="fare">Enter locations and calculate distance.</p>
-        <small>
-          Sample estimate only — not a confirmed fare.
-        </small>
+        <small>Sample estimate only — not a confirmed fare.</small>
       </div>
 
       <button
@@ -168,3 +178,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+```
