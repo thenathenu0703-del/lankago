@@ -11,7 +11,7 @@ const SUPABASE_FUNCTION_URL =
 // Add your Supabase PUBLISHABLE key below.
 // Never put a service_role or secret key in website code.
 const SUPABASE_PUBLISHABLE_KEY =
-  sb_publishable_B3g1DSpHOQ4nZHFdmsQO_Q_BqAFHYKi";
+    "sb_publishable_B3g1DSpHOQ4nZHFdmsQO_Q_BqAFHYKi";
 // Sample rates only — not official Sri Lankan fares
 const fareRates = {
   "Tuk Tuk": { base: 100, perKm: 80 },
