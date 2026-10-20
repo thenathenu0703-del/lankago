@@ -5,15 +5,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta name="theme-color" content="#075e54">
+  <meta name="theme-color" content="#087f5b">
   <meta name="description" content="LankaGo - Explore Sri Lanka and estimate your travel fares.">
-
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="LankaGo">
 
-  <title>LankaGo - Travel Sri Lanka</title>
+  <title>LankaGo - Sri Lanka Travel</title>
 
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -23,20 +21,61 @@
 
 <body>
 
-  <div class="app">
+  <header class="header">
+    <h1>🚕 LankaGo</h1>
+    <p>Sri Lanka's All-in-One Travel App</p>
+  </header>
 
-    <header class="header">
-      <h1>🚕 LankaGo</h1>
-      <p>Sri Lanka's All-in-One Travel App</p>
-    </header>
+  <main>
 
     <section class="welcome">
       <h2>Travel Smarter with LankaGo!</h2>
-      <p>Your journey starts here.</p>
+      <p>Your journey starts here. Explore Sri Lanka and estimate your travel fares.</p>
+    </section>
+
+    <section class="services">
+      <h2>Our Services</h2>
+
+      <div class="service-list">
+        <div class="service-card">
+          <h3>🚕 Tuk Tuk</h3>
+          <p>Convenient rides for short journeys.</p>
+        </div>
+
+        <div class="service-card">
+          <h3>🚗 Car</h3>
+          <p>Comfortable travel for individuals and families.</p>
+        </div>
+
+        <div class="service-card">
+          <h3>🚐 Van</h3>
+          <p>Travel together with more passengers.</p>
+        </div>
+      </div>
     </section>
 
     <section class="booking">
       <h2>📍 Book Your Ride</h2>
+
+      <label for="customer_name">Your Name</label>
+      <input
+        id="customer_name"
+        type="text"
+        placeholder="Enter your full name"
+        maxlength="100"
+        autocomplete="name"
+        required
+      >
+
+      <label for="customer_phone">Phone Number</label>
+      <input
+        id="customer_phone"
+        type="tel"
+        placeholder="Enter your phone number"
+        maxlength="25"
+        autocomplete="tel"
+        required
+      >
 
       <label for="pickup">Pickup Location</label>
       <input
@@ -44,6 +83,7 @@
         type="text"
         placeholder="Enter pickup location in Sri Lanka"
         autocomplete="street-address"
+        required
       >
 
       <label for="destination">Destination</label>
@@ -51,6 +91,7 @@
         id="destination"
         type="text"
         placeholder="Enter destination in Sri Lanka"
+        required
       >
 
       <button
@@ -63,7 +104,7 @@
 
       <p id="route-status" role="status" aria-live="polite"></p>
 
-      <label for="distance">Travel Distance (km)</label>
+      <label for="distance">Distance (km)</label>
       <input
         id="distance"
         type="number"
@@ -76,25 +117,38 @@
       <h3>Choose Your Transport</h3>
 
       <div class="transport-options">
-        <button type="button" onclick="choose('Tuk Tuk')">
+        <button
+          type="button"
+          class="transport-button"
+          onclick="selectTransport('Tuk Tuk')"
+        >
           🛺 Tuk Tuk
         </button>
 
-        <button type="button" onclick="choose('Car')">
+        <button
+          type="button"
+          class="transport-button"
+          onclick="selectTransport('Car')"
+        >
           🚗 Car
         </button>
 
-        <button type="button" onclick="choose('Van')">
+        <button
+          type="button"
+          class="transport-button"
+          onclick="selectTransport('Van')"
+        >
           🚐 Van
         </button>
       </div>
 
-      <p id="selected">Selected: None</p>
+      <p id="selected-transport" role="status" aria-live="polite">
+        Please select a transport.
+      </p>
 
       <div class="fare-box">
         <h3>💰 Estimated Fare</h3>
-        <p id="fare">Enter locations and calculate distance.</p>
-        <small>Sample estimate only — not a confirmed fare.</small>
+        <p id="fare">Please calculate the distance and choose transport.</p>
       </div>
 
       <button
@@ -124,55 +178,12 @@
       </button>
     </section>
 
-    <section class="services">
-      <h2>🌍 Explore Our Services</h2>
+  </main>
 
-      <div class="service-grid">
-
-        <div class="service-card">
-          <span>🚌</span>
-          <h3>Bus</h3>
-          <p>Bus travel information</p>
-        </div>
-
-        <div class="service-card">
-          <span>🚆</span>
-          <h3>Train</h3>
-          <p>Train travel information</p>
-        </div>
-
-        <div class="service-card">
-          <span>✈️</span>
-          <h3>Flights</h3>
-          <p>Flight information</p>
-        </div>
-
-        <div class="service-card">
-          <span>🏨</span>
-          <h3>Hotels</h3>
-          <p>Find places to stay</p>
-        </div>
-
-        <div class="service-card">
-          <span>🗺️</span>
-          <h3>Tours</h3>
-          <p>Explore Sri Lanka</p>
-        </div>
-
-        <div class="service-card">
-          <span>📦</span>
-          <h3>Goods Transport</h3>
-          <p>Transport your goods</p>
-        </div>
-
-      </div>
-    </section>
-
-    <footer class="footer">
-      <p>© 2026 LankaGo | Travel Across Sri Lanka 🇱🇰</p>
-    </footer>
-
-  </div>
+  <footer>
+    <p>© 2026 LankaGo | Travel Across Sri Lanka 🇱🇰</p>
+    <p>Demo version — real bookings require backend connection.</p>
+  </footer>
 
   <script src="./script.js"></script>
 
@@ -195,4 +206,3 @@
 
 </body>
 </html>
-```
