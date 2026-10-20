@@ -8,10 +8,11 @@ let routeDistance = null;
 const SUPABASE_FUNCTION_URL =
   "https://vcndnnjrftexsgrrezxi.supabase.co/functions/v1/lankago-booking";
 
-// Add your Supabase PUBLISHABLE key below.
-// Never put a service_role or secret key in website code.
+// உங்கள் தற்போதைய Supabase Publishable Key-ஐ இங்கே இடவும்.
+// service_role / secret key-ஐ இங்கே பயன்படுத்த வேண்டாம்.
 const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_B3g1DSpHOQ4nZHFdmsQO_Q_BqAFHYKi";
+  "sb_publishable_B3g1DSpHOQ4nZHFdmsQO_Q_BqAFHYKi";
+
 // Sample rates only — not official Sri Lankan fares
 const fareRates = {
   "Tuk Tuk": { base: 100, perKm: 80 },
@@ -19,6 +20,13 @@ const fareRates = {
   "Van": { base: 400, perKm: 160 }
 };
 
+// Map variables
+let lankagoMap = null;
+let pickupMarker = null;
+let destinationMarker = null;
+let routeLine = null;
+
+// Basic helpers
 function getValue(id) {
   const element = document.getElementById(id);
   return element ? element.value.trim() : "";
@@ -29,20 +37,103 @@ function setText(id, message) {
   if (element) element.textContent = message;
 }
 
-// Select transport — supports the current HTML button names
+// ------------------------------
+// MAP
+// ------------------------------
+
+function initializeLankaGoMap() {
+  const mapElement = document.getElementById("map");
+
+  if (!mapElement || typeof L === "undefined") {
+    return;
+  }
+
+  if (lankagoMap) {
+    lankagoMap.invalidateSize();
+    return;
+  }
+
+  lankagoMap = L.map("map").setView([7.8731, 80.7718], 7);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors",
+    maxZoom: 19
+  }).addTo(lankagoMap);
+}
+
+function updateLankaGoMap(start, end, coordinates) {
+  initializeLankaGoMap();
+
+  if (!lankagoMap || typeof L === "undefined") {
+    setText(
+      "route-status",
+      "Distance calculated, but the map could not load. Check your internet connection."
+    );
+    return;
+  }
+
+  if (pickupMarker) {
+    lankagoMap.removeLayer(pickupMarker);
+  }
+
+  if (destinationMarker) {
+    lankagoMap.removeLayer(destinationMarker);
+  }
+
+  if (routeLine) {
+    lankagoMap.removeLayer(routeLine);
+  }
+
+  pickupMarker = L.marker([start.lat, start.lon])
+    .addTo(lankagoMap)
+    .bindPopup("Pickup: " + getValue("pickup"));
+
+  destinationMarker = L.marker([end.lat, end.lon])
+    .addTo(lankagoMap)
+    .bindPopup("Destination: " + getValue("destination"));
+
+  // OSRM coordinates are [longitude, latitude].
+  // Leaflet needs [latitude, longitude].
+  const roadCoordinates = coordinates.map(function(point) {
+    return [point[1], point[0]];
+  });
+
+  routeLine = L.polyline(roadCoordinates, {
+    color: "#087f5b",
+    weight: 5
+  }).addTo(lankagoMap);
+
+  lankagoMap.fitBounds(routeLine.getBounds(), {
+    padding: [25, 25]
+  });
+
+  setTimeout(function() {
+    if (lankagoMap) lankagoMap.invalidateSize();
+  }, 200);
+}
+
+// ------------------------------
+// TRANSPORT SELECTION
+// ------------------------------
+
 function selectTransport(type) {
   transport = type;
+
   setText("selected-transport", "Selected: " + type);
   setText("selected", "Selected: " + type);
+
   calculateFare();
 }
 
-// Keep compatibility with older buttons
+// Compatibility with older buttons
 function choose(type) {
   selectTransport(type);
 }
 
-// Find a location in Sri Lanka
+// ------------------------------
+// FIND LOCATION IN SRI LANKA
+// ------------------------------
+
 async function findLocation(place) {
   const url =
     "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=lk&q=" +
@@ -51,14 +142,17 @@ async function findLocation(place) {
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error("Location search is temporarily unavailable.");
+    throw new Error(
+      "Location search is temporarily unavailable. Please try again."
+    );
   }
 
   const data = await response.json();
 
   if (!data.length) {
     throw new Error(
-      'Location not found: "' + place +
+      'Location not found: "' +
+      place +
       '". Try adding the town or district.'
     );
   }
@@ -69,7 +163,10 @@ async function findLocation(place) {
   };
 }
 
-// Calculate road distance using OSRM
+// ------------------------------
+// CALCULATE ROAD DISTANCE
+// ------------------------------
+
 async function calculateRouteDistance() {
   const pickup = getValue("pickup");
   const destination = getValue("destination");
@@ -77,7 +174,10 @@ async function calculateRouteDistance() {
   const distanceInput = document.getElementById("distance");
 
   if (!pickup || !destination) {
-    setText("route-status", "Enter both pickup and destination.");
+    setText(
+      "route-status",
+      "Enter both pickup and destination."
+    );
     return;
   }
 
@@ -90,61 +190,107 @@ async function calculateRouteDistance() {
   }
 
   routeDistance = null;
-  if (distanceInput) distanceInput.value = "";
+
+  if (distanceInput) {
+    distanceInput.value = "";
+  }
 
   calculateFare();
-  setText("route-status", "Finding locations and road distance...");
+  setText(
+    "route-status",
+    "Finding locations and road distance..."
+  );
 
-  if (button) button.disabled = true;
+  if (button) {
+    button.disabled = true;
+  }
 
   try {
     const start = await findLocation(pickup);
     const end = await findLocation(destination);
 
+    // Request the actual road route geometry from OSRM
     const routeUrl =
       "https://router.project-osrm.org/route/v1/driving/" +
       start.lon + "," + start.lat + ";" +
-      end.lon + "," + end.lat + "?overview=false";
+      end.lon + "," + end.lat +
+      "?overview=full&geometries=geojson";
 
     const response = await fetch(routeUrl);
 
     if (!response.ok) {
-      throw new Error("Route service is temporarily unavailable.");
+      throw new Error(
+        "Route service is temporarily unavailable. Please try again."
+      );
     }
 
     const data = await response.json();
 
     if (data.code !== "Ok" || !data.routes?.length) {
-      throw new Error("No road route found for these locations.");
+      throw new Error(
+        "No road route found. Please check the locations."
+      );
     }
 
-    const km = Math.round(data.routes[0].distance / 100) / 10;
+    const route = data.routes[0];
+    const km = Math.round(route.distance / 100) / 10;
+
+    if (
+      !Number.isFinite(km) ||
+      km <= 0 ||
+      !route.geometry?.coordinates?.length
+    ) {
+      throw new Error(
+        "Could not get a valid road route for these locations."
+      );
+    }
 
     routeDistance = km;
-    if (distanceInput) distanceInput.value = km;
+
+    if (distanceInput) {
+      distanceInput.value = km;
+    }
+
+    updateLankaGoMap(
+      start,
+      end,
+      route.geometry.coordinates
+    );
 
     setText(
       "route-status",
-      "Road distance: " + km + " km. Please check the locations."
+      "Road distance: " + km +
+      " km. Please check the route on the map."
     );
 
     calculateFare();
+
   } catch (error) {
     routeDistance = null;
-    if (distanceInput) distanceInput.value = "";
+
+    if (distanceInput) {
+      distanceInput.value = "";
+    }
 
     setText(
       "route-status",
-      error.message || "Could not calculate distance. Try again."
+      error.message ||
+      "Could not calculate distance. Please try again."
     );
 
     calculateFare();
+
   } finally {
-    if (button) button.disabled = false;
+    if (button) {
+      button.disabled = false;
+    }
   }
 }
 
-// Calculate estimated fare
+// ------------------------------
+// CALCULATE ESTIMATED FARE
+// ------------------------------
+
 function calculateFare() {
   const pickup = getValue("pickup");
   const destination = getValue("destination");
@@ -160,21 +306,26 @@ function calculateFare() {
     Math.abs(distance - routeDistance) > 0.01
   ) {
     fareAmount = 0;
+
     setText(
       "fare",
       "Enter both locations, calculate road distance and choose transport."
     );
+
     return;
   }
 
   const rate = fareRates[transport];
+
   if (!rate) {
     fareAmount = 0;
     setText("fare", "Please select a valid transport.");
     return;
   }
 
-  fareAmount = Math.round(rate.base + distance * rate.perKm);
+  fareAmount = Math.round(
+    rate.base + distance * rate.perKm
+  );
 
   setText(
     "fare",
@@ -184,10 +335,11 @@ function calculateFare() {
   );
 }
 
-// Create a real booking using the Supabase Edge Function
-async function bookRide() {
-  const result = document.getElementById("result");
+// ------------------------------
+// CREATE BOOKING IN SUPABASE
+// ------------------------------
 
+async function bookRide() {
   const customerName = getValue("customer_name");
   const customerPhone = getValue("customer_phone");
   const pickup = getValue("pickup");
@@ -231,7 +383,7 @@ async function bookRide() {
   if (
     !SUPABASE_PUBLISHABLE_KEY ||
     SUPABASE_PUBLISHABLE_KEY ===
-      "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE"
+      "YOUR_SUPABASE_PUBLISHABLE_KEY_HERE"
   ) {
     setText(
       "result",
@@ -241,7 +393,10 @@ async function bookRide() {
   }
 
   const button = document.querySelector(".book-button");
-  if (button) button.disabled = true;
+
+  if (button) {
+    button.disabled = true;
+  }
 
   setText("result", "Sending booking securely...");
 
@@ -265,11 +420,25 @@ async function bookRide() {
       })
     });
 
-    const data = await response.json();
+    let data;
+
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error(
+        "The booking service returned an unexpected response."
+      );
+    }
 
     if (!response.ok) {
       throw new Error(
         data.error || "Booking failed. Please try again."
+      );
+    }
+
+    if (!data.booking_code) {
+      throw new Error(
+        "The service did not return a booking code. Please check your bookings before retrying."
       );
     }
 
@@ -279,8 +448,8 @@ async function bookRide() {
       destination: destination,
       distance: distance,
       transport: transport,
-      fare: data.estimated_fare,
-      status: data.booking_status
+      fare: data.estimated_fare ?? fareAmount,
+      status: data.booking_status || "pending"
     };
 
     bookings.unshift(booking);
@@ -289,32 +458,45 @@ async function bookRide() {
     setText(
       "result",
       "Booking saved! Code: " + data.booking_code +
-      ". Status: " + data.booking_status +
+      ". Status: " + booking.status +
       ". Keep your booking code safe."
     );
+
   } catch (error) {
     console.error("LankaGo booking error:", error);
+
     setText(
       "result",
       error.message ||
       "Could not contact the booking service. Please try again."
     );
+
   } finally {
-    if (button) button.disabled = false;
+    if (button) {
+      button.disabled = false;
+    }
   }
 }
 
-// Display bookings created during this page session
+// ------------------------------
+// DISPLAY SESSION BOOKING HISTORY
+// ------------------------------
+
 function renderHistory() {
   const history = document.getElementById("history");
-  if (!history) return;
+
+  if (!history) {
+    return;
+  }
 
   history.replaceChildren();
 
   if (bookings.length === 0) {
     const message = document.createElement("p");
+
     message.textContent =
       "Bookings made in this session will appear here.";
+
     history.appendChild(message);
     return;
   }
@@ -324,40 +506,55 @@ function renderHistory() {
     item.className = "booking-item";
 
     const title = document.createElement("strong");
+
     title.textContent =
       booking.transport + " — LKR " +
       Number(booking.fare).toLocaleString("en-LK");
 
     const code = document.createElement("p");
-    code.textContent = "Booking code: " + booking.booking_code;
+    code.textContent =
+      "Booking code: " + booking.booking_code;
 
     const route = document.createElement("p");
     route.textContent =
       booking.pickup + " → " + booking.destination;
 
     const distance = document.createElement("p");
-    distance.textContent = "Distance: " + booking.distance + " km";
+    distance.textContent =
+      "Distance: " + booking.distance + " km";
 
     const status = document.createElement("p");
-    status.textContent = "Status: " + booking.status;
+    status.textContent =
+      "Status: " + booking.status;
 
-    item.append(title, code, route, distance, status);
+    item.append(
+      title,
+      code,
+      route,
+      distance,
+      status
+    );
+
     history.appendChild(item);
   });
 }
 
 // Clear only the displayed session history.
-// This does NOT delete bookings from the database.
+// Database bookings are NOT deleted.
 function clearHistory() {
   bookings = [];
   renderHistory();
+
   setText(
     "result",
     "Displayed history cleared. Saved database bookings are unchanged."
   );
 }
 
-// Changing locations means distance must be recalculated
+// ------------------------------
+// RESET DISTANCE WHEN LOCATIONS CHANGE
+// ------------------------------
+
 ["pickup", "destination"].forEach(function(id) {
   const input = document.getElementById(id);
 
@@ -365,8 +562,12 @@ function clearHistory() {
     input.addEventListener("input", function() {
       routeDistance = null;
 
-      const distanceInput = document.getElementById("distance");
-      if (distanceInput) distanceInput.value = "";
+      const distanceInput =
+        document.getElementById("distance");
+
+      if (distanceInput) {
+        distanceInput.value = "";
+      }
 
       setText(
         "route-status",
@@ -376,4 +577,13 @@ function clearHistory() {
       calculateFare();
     });
   }
+});
+
+// ------------------------------
+// START MAP WHEN PAGE LOADS
+// ------------------------------
+
+window.addEventListener("load", function() {
+  initializeLankaGoMap();
+  renderHistory();
 });
