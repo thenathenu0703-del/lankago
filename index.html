@@ -4,65 +4,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <meta name="theme-color" content="#087f5b">
   <meta name="description" content="LankaGo - Explore Sri Lanka and estimate your travel fares.">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="LankaGo">
 
   <title>LankaGo - Sri Lanka Travel</title>
 
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icon.svg">
   <link rel="stylesheet" href="./style.css">
+
+  <!-- Leaflet map styles -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  >
+
+  <style>
+    #map {
+      width: 100%;
+      height: 350px;
+      min-height: 280px;
+      border-radius: 14px;
+      margin: 15px 0;
+      border: 1px solid #ddd;
+      z-index: 1;
+    }
+
+    .map-section {
+      margin: 20px 0;
+    }
+
+    .map-note {
+      font-size: 14px;
+      color: #555;
+    }
+
+    input, button {
+      max-width: 100%;
+    }
+
+    .booking-item {
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      overflow-wrap: anywhere;
+    }
+  </style>
 </head>
 
 <body>
-
-  <header class="header">
+  <header>
     <h1>🚕 LankaGo</h1>
     <p>Sri Lanka's All-in-One Travel App</p>
   </header>
 
   <main>
-
-    <section class="welcome">
-      <h2>Travel Smarter with LankaGo!</h2>
-      <p>Your journey starts here. Explore Sri Lanka and estimate your travel fares.</p>
+    <section>
+      <h2>Welcome to LankaGo!</h2>
+      <p>Your journey starts here. Travel smarter across Sri Lanka.</p>
     </section>
 
-    <section class="services">
-      <h2>Our Services</h2>
-
-      <div class="service-list">
-        <div class="service-card">
-          <h3>🚕 Tuk Tuk</h3>
-          <p>Convenient rides for short journeys.</p>
-        </div>
-
-        <div class="service-card">
-          <h3>🚗 Car</h3>
-          <p>Comfortable travel for individuals and families.</p>
-        </div>
-
-        <div class="service-card">
-          <h3>🚐 Van</h3>
-          <p>Travel together with more passengers.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="booking">
+    <section id="booking-section">
       <h2>📍 Book Your Ride</h2>
 
       <label for="customer_name">Your Name</label>
       <input
         id="customer_name"
         type="text"
-        placeholder="Enter your full name"
-        maxlength="100"
+        placeholder="Enter your name"
         autocomplete="name"
         required
       >
@@ -72,7 +82,6 @@
         id="customer_phone"
         type="tel"
         placeholder="Enter your phone number"
-        maxlength="25"
         autocomplete="tel"
         required
       >
@@ -81,7 +90,7 @@
       <input
         id="pickup"
         type="text"
-        placeholder="Enter pickup location in Sri Lanka"
+        placeholder="e.g. Colombo Fort"
         autocomplete="street-address"
         required
       >
@@ -90,7 +99,7 @@
       <input
         id="destination"
         type="text"
-        placeholder="Enter destination in Sri Lanka"
+        placeholder="e.g. Galle"
         required
       >
 
@@ -102,9 +111,11 @@
         📍 Calculate Distance
       </button>
 
-      <p id="route-status" role="status" aria-live="polite"></p>
+      <p id="route-status" role="status" aria-live="polite">
+        Enter your pickup and destination.
+      </p>
 
-      <label for="distance">Distance (km)</label>
+      <label for="distance">Road Distance (KM)</label>
       <input
         id="distance"
         type="number"
@@ -114,95 +125,78 @@
         readonly
       >
 
-      <h3>Choose Your Transport</h3>
+      <div class="map-section">
+        <h3>🗺️ Your Travel Route</h3>
+        <p class="map-note">
+          Calculate your distance to show the pickup, destination and route on the map.
+        </p>
+        <div id="map" aria-label="Travel route map"></div>
+      </div>
+
+      <h3>🚘 Choose Transport</h3>
 
       <div class="transport-options">
-        <button
-          type="button"
-          class="transport-button"
-          onclick="selectTransport('Tuk Tuk')"
-        >
+        <button type="button" onclick="selectTransport('Tuk Tuk')">
           🛺 Tuk Tuk
         </button>
 
-        <button
-          type="button"
-          class="transport-button"
-          onclick="selectTransport('Car')"
-        >
+        <button type="button" onclick="selectTransport('Car')">
           🚗 Car
         </button>
 
-        <button
-          type="button"
-          class="transport-button"
-          onclick="selectTransport('Van')"
-        >
+        <button type="button" onclick="selectTransport('Van')">
           🚐 Van
         </button>
       </div>
 
-      <p id="selected-transport" role="status" aria-live="polite">
+      <p id="selected-transport" role="status">
         Please select a transport.
       </p>
 
-      <div class="fare-box">
-        <h3>💰 Estimated Fare</h3>
-        <p id="fare">Please calculate the distance and choose transport.</p>
-      </div>
+      <h3>💰 Estimated Fare</h3>
+      <p id="fare" aria-live="polite">
+        Enter both locations, calculate road distance and choose transport.
+      </p>
 
-      <button
-        type="button"
-        class="book-button"
-        onclick="bookRide()"
-      >
+      <button type="button" class="book-button" onclick="bookRide()">
         Book Now
       </button>
 
       <p id="result" role="status" aria-live="polite"></p>
     </section>
 
-    <section class="history-section">
+    <section>
       <h2>📋 My Booking History</h2>
-
       <div id="history">
-        <p>No bookings yet.</p>
+        <p>Bookings made in this session will appear here.</p>
       </div>
 
-      <button
-        type="button"
-        class="clear-button"
-        onclick="clearHistory()"
-      >
+      <button type="button" onclick="clearHistory()">
         🗑️ Clear History
       </button>
     </section>
-
   </main>
 
   <footer>
     <p>© 2026 LankaGo | Travel Across Sri Lanka 🇱🇰</p>
-    <p>Demo version — real bookings require backend connection.</p>
+    <p>Fare estimates are illustrative, not official transport prices.</p>
   </footer>
 
+  <!-- Leaflet map library -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Existing booking and distance calculator -->
   <script src="./script.js"></script>
 
   <script>
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
+      window.addEventListener("load", function () {
         navigator.serviceWorker.register("./service-worker.js")
-          .then(() => {
-            console.log("LankaGo offline support ready");
-          })
-          .catch((error) => {
-            console.error(
-              "Service worker registration failed:",
-              error
-            );
+          .catch(function (error) {
+            console.error("Service worker registration failed:", error);
           });
       });
     }
   </script>
-
 </body>
 </html>
